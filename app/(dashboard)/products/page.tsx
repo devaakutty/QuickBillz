@@ -23,7 +23,6 @@ export default function ProductsPage() {
   useEffect(() => {
     apiFetch<Product[]>("/products")
       .then(setProducts)
-      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
@@ -44,50 +43,86 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* HEADER */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.push("/reports")}
-            className="px-3 py-1 border rounded text-sm hover:bg-gray-50"
-          >
-            ← Back
-          </button>
-          <h1 className="text-2xl font-bold">Products</h1>
-        </div>
+    <div className="space-y-4">
+      {/* ================= PAGE HEADER (STICKY) ================= */}
+      <div className="sticky top-0 z-30 bg-zinc-50 pb-4">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.back()}
+              className="px-3 py-1 border rounded text-sm hover:bg-gray-50"
+            >
+              ← Back
+            </button>
 
-        <Link
-          href="/products/create"
-          className="px-4 py-2 bg-black text-white rounded"
-        >
-          + Add Product
-        </Link>
+            <h1 className="text-2xl font-bold">
+              Products
+              <span className="ml-2 text-sm font-medium text-gray-500">
+                ({products.length})
+              </span>
+            </h1>
+          </div>
+
+          <div className="flex gap-3">
+            <Link
+              href="/products/bulk"
+              className="px-4 py-2 border rounded hover:bg-gray-50"
+            >
+              Bulk Add
+            </Link>
+
+            <Link
+              href="/products/create"
+              className="px-4 py-2 bg-black text-white rounded"
+            >
+              + Add Product
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {/* TABLE */}
-      <div className="bg-white border rounded-xl overflow-hidden">
+      {/* ================= TABLE ================= */}
+      <div className="bg-white border rounded-xl overflow-hidden max-h-[70vh] overflow-y-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="p-4 text-left">Name</th>
-              <th className="p-4 text-left">Rate</th>
-              <th className="p-4 text-left">Stock</th>
-              <th className="p-4 text-left">Unit</th>
-              <th className="p-4 text-left">Status</th>
-              <th className="p-4 text-right">Action</th>
+          <thead>
+            <tr className="bg-gray-50 border-b">
+              <th className="p-4 text-left sticky top-0 bg-gray-50 z-20">
+                Name
+              </th>
+              <th className="p-4 text-left sticky top-0 bg-gray-50 z-20">
+                Rate
+              </th>
+              <th className="p-4 text-left sticky top-0 bg-gray-50 z-20">
+                Stock
+              </th>
+              <th className="p-4 text-left sticky top-0 bg-gray-50 z-20">
+                Unit
+              </th>
+              <th className="p-4 text-left sticky top-0 bg-gray-50 z-20">
+                Status
+              </th>
+              <th className="p-4 text-right sticky top-0 bg-gray-50 z-20">
+                Action
+              </th>
             </tr>
           </thead>
 
           <tbody>
             {products.map((p) => (
-              <tr key={p.id} className="border-t">
+              <tr
+                key={p.id}
+                onClick={() => router.push(`/products/${p.id}`)}
+                className="border-t hover:bg-gray-50 cursor-pointer"
+              >
                 <td className="p-4 font-medium">{p.name}</td>
-                <td className="p-4">₹{p.rate}</td>
+
+                <td className="p-4">
+                  ₹{p.rate.toLocaleString("en-IN")}
+                </td>
 
                 <td
                   className={`p-4 font-semibold ${
-                    p.stock <= 5 ? "text-red-600" : ""
+                    p.stock <= 5 ? "text-red-600" : "text-gray-900"
                   }`}
                 >
                   {p.stock}
@@ -96,16 +131,27 @@ export default function ProductsPage() {
                 <td className="p-4">{p.unit ?? "—"}</td>
 
                 <td className="p-4">
-                  {p.isActive ? "Active" : "Inactive"}
+                  <span
+                    className={`px-2 py-1 rounded text-xs font-medium ${
+                      p.isActive
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-200 text-gray-600"
+                    }`}
+                  >
+                    {p.isActive ? "Active" : "Inactive"}
+                  </span>
                 </td>
 
                 <td className="p-4 text-right">
                   <button
-                    onClick={() => handleDelete(p.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(p.id);
+                    }}
                     disabled={deletingId === p.id}
                     className="text-red-600 hover:underline disabled:opacity-50"
                   >
-                    {deletingId === p.id ? "Deleting..." : "Delete"}
+                    {deletingId === p.id ? "Deleting…" : "Delete"}
                   </button>
                 </td>
               </tr>

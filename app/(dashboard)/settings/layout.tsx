@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-
-/* ================= TABS ================= */
+import { motion } from "framer-motion";
 
 const tabs = [
   { label: "Profile", href: "/settings/profile" },
@@ -28,38 +27,54 @@ export default function SettingsLayout({
     pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <section className="space-y-8">
-      {/* ================= HEADER ================= */}
-      <header className="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl p-6 text-white shadow">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Settings
-        </h1>
-        <p className="text-sm opacity-90 mt-1">
-          Manage your account preferences
-        </p>
+    <div className="p-6 bg-[#F4F4F4] min-h-screen space-y-6">
+      {/* 1. COMPACT BLACK HEADER */}
+      <header className="bg-black rounded-[24px] p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="relative z-10">
+          <span className="bg-white/20 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
+            Configuration
+          </span>
+          <h1 className="text-3xl font-black tracking-tighter mt-1">
+            Settings<span className="text-gray-500">.</span>
+          </h1>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight mt-1">
+            Manage your account and platform preferences
+          </p>
+        </div>
+        {/* Subtle decorative element to match the character dashboard style */}
+        <div className="absolute right-[-20px] top-[-20px] w-32 h-32 bg-white/5 rounded-full blur-3xl" />
       </header>
 
-      {/* ================= TABS ================= */}
-      <nav className="flex flex-wrap gap-2 bg-white dark:bg-[#0b0e14] border border-gray-200 dark:border-white/10 rounded-xl p-2">
-        {tabs.map((tab) => (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-              isActive(tab.href)
-                ? "bg-indigo-600 text-white shadow"
-                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
-            }`}
-          >
-            {tab.label}
-          </Link>
-        ))}
+      {/* 2. TAB NAVIGATION - Neo-Brutal Style */}
+      <nav className="flex flex-wrap gap-2 p-2 bg-white border-2 border-black rounded-[20px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+        {tabs.map((tab) => {
+          const active = isActive(tab.href);
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              className={`relative px-4 py-2 rounded-xl text-xs font-black uppercase tracking-tight transition-all duration-200 ${
+                active
+                  ? "bg-black text-white shadow-md"
+                  : "text-gray-400 hover:text-black hover:bg-gray-50"
+              }`}
+            >
+              {tab.label}
+              {active && (
+                <motion.div 
+                  layoutId="activeTab"
+                  className="absolute inset-0 bg-black rounded-xl -z-10"
+                />
+              )}
+            </Link>
+          );
+        })}
       </nav>
 
-      {/* ================= CONTENT ================= */}
-      <div className="bg-white dark:bg-[#0b0e14] border border-gray-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
+      {/* 3. CONTENT AREA */}
+      <main className="bg-white border-2 border-black rounded-[32px] p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] min-h-[400px]">
         {children}
-      </div>
-    </section>
+      </main>
+    </div>
   );
 }

@@ -3,58 +3,74 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { sidebarLinks } from "./sidebarConfig";
+import { LayoutDashboard, Settings, LogOut } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 min-h-screen bg-gradient-to-b from-[#0c0f1f] to-[#14172e] text-white px-5 py-6 shadow-xl">
-      {/* LOGO */}
-      <div className="mb-10">
-        <h1 className="text-2xl font-extrabold tracking-tight">
-          Quick<span className="text-indigo-400">Billz</span>
-        </h1>
-        <p className="text-xs text-gray-400 mt-1">
-          Smart billing & inventory
-        </p>
-      </div>
+    // MAIN WRAPPER: Ensures the sidebar stays fixed and "floating" on the page
+    <div className="hidden md:flex h-screen p-6 bg-[#F8F8F8] sticky top-0"> 
+      <aside className="w-20 lg:w-64 h-full bg-black text-white rounded-[32px] flex flex-col py-8 shadow-2xl overflow-hidden">
+        
+        {/* 1. LOGO SECTION */}
+        <div className="mb-10 flex flex-col items-center lg:items-start lg:px-8 w-full shrink-0">
+          <div className="bg-white text-black w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl mb self-center lg:self-start">
+            Joe.
+          </div>
+          <h1 className="hidden lg:block text-xl font-bold tracking-tight">
+            QuickBillz
+          </h1>
+          <p className="hidden lg:block text-[10px] text-gray-500 uppercase tracking-widest mt-1 font-semibold">
+            Premium POS
+          </p>
+        </div>
 
-      {/* NAV */}
-      <nav className="space-y-1">
-        {sidebarLinks.map((link) => {
-          const active =
-            pathname === link.href ||
-            pathname.startsWith(link.href + "/");
+        {/* 2. NAVIGATION (Scrollable if links are many, but stays in one container) */}
+        <nav className="flex-1 w-full px-4 space-y-2 overflow-y-auto no-scrollbar">
+          {sidebarLinks.map((link) => {
+            const active = pathname === link.href || pathname.startsWith(link.href + "/");
 
-          return (
-            <Link
-              key={link.id}
-              href={link.href}
-              className={`group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                active
-                  ? "bg-indigo-500/15 text-white shadow-inner"
-                  : "text-gray-400 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              {/* ACTIVE INDICATOR */}
-              <span
-                className={`h-2 w-2 rounded-full transition ${
+            return (
+              <Link
+                key={link.id}
+                href={link.href}
+                className={`group relative flex items-center justify-center lg:justify-start gap-4 px-4 py-4 rounded-2xl transition-all duration-300 ${
                   active
-                    ? "bg-indigo-400"
-                    : "bg-transparent group-hover:bg-indigo-400/40"
+                    ? "bg-white text-black" 
+                    : "text-gray-400 hover:text-white hover:bg-white/10"
                 }`}
-              />
+              >
+                <div className={`${active ? "text-black" : "text-gray-400 group-hover:text-white"}`}>
+                   {/* Replace with link.icon from your config */}
+                   <LayoutDashboard size={22} strokeWidth={2.5} />
+                </div>
 
-              <span>{link.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
+                <span className="hidden lg:block text-sm font-bold tracking-wide">
+                  {link.label}
+                </span>
 
-      {/* FOOTER / VERSION */}
-      <div className="mt-auto pt-10 text-xs text-gray-500">
-        © {new Date().getFullYear()} QuickBillz
-      </div>
-    </aside>
+                {active && (
+                  <div className="absolute right-3 hidden lg:block w-1.5 h-1.5 bg-black rounded-full" />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* 3. BOTTOM SECTION (Fixed at the bottom of the black sidebar) */}
+        <div className="w-full px-4 mt-auto pt-3 shrink-0 border-t border-white/10">
+           {/* <button className="flex items-center justify-center lg:justify-start gap-4 w-full px-4 py-4 text-gray-400 hover:text-white transition-colors">
+              <Settings size={22} />
+              <span className="hidden lg:block text-sm font-bold">Settings</span>
+           </button> */}
+
+           <button className="flex items-center justify-center lg:justify-start gap-4 w-full px-4 py-4 bg-white/5 rounded-2xl text-gray-400 hover:bg-red-500 hover:text-white transition-all duration-300 mt-2">
+              <LogOut size={22} />
+              <span className="hidden lg:block text-sm font-bold">Logout</span>
+           </button>
+        </div>
+      </aside>
+    </div>
   );
 }

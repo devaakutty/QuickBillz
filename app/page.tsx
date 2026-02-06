@@ -13,12 +13,12 @@ export default function Home() {
         >
           Login
         </a>
-        <a
+        {/* <a
           href="/signup"
           className="px-4 py-2 border rounded"
         >
           Get Started
-        </a>
+        </a> */}
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import Sidebar from "@/components/layout/Sidebar";
 import Topbar from "@/components/layout/Topbar";
-import Footer from "@/components/layout/Footer";
+// import Footer from "@/components/layout/Footer";
 import AuthGuard from "@/components/AuthGuard";
 import { InvoiceStoreProvider } from "@/hooks/useInvoicesStore";
 
@@ -14,21 +14,25 @@ export default function DashboardLayout({
   return (
     <AuthGuard>
       <InvoiceStoreProvider>
-        <div className="flex min-h-screen bg-zinc-50">
-          {/* Sidebar */}
+        {/* 🔒 Lock layout to viewport */}
+        <div className="flex h-screen overflow-hidden bg-zinc-50">
+          
+          {/* Sidebar (fixed, no scroll) */}
           <Sidebar />
 
-          {/* Main Content */}
-          <div className="flex-1 flex flex-col">
+          {/* Right side */}
+          <div className="flex-1 flex flex-col overflow-hidden">
             <Topbar />
 
-            <main className="p-6 flex-1">
+            {/* ✅ ONLY this area scrolls */}
+            <main className="flex-1 overflow-y-auto p-6 no-scrollbar">
               {children}
             </main>
 
-            {/* Footer */}
-            <Footer />
+            {/* Footer stays visible */}
+            {/* <Footer /> */}
           </div>
+
         </div>
       </InvoiceStoreProvider>
     </AuthGuard>

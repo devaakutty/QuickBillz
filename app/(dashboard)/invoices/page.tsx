@@ -104,7 +104,12 @@ export default function InvoicesPage() {
 
           <tbody>
             {invoices.map((inv) => (
-              <tr key={inv.id} className="border-t hover:bg-gray-50">
+              <tr
+                key={inv.id}
+                onClick={() => router.push(`/invoices/${inv.id}`)}
+                className="border-t hover:bg-gray-50 cursor-pointer"
+              >
+
                 <td className="p-4 font-mono">{inv.invoiceNo}</td>
 
                 <td className="p-4">

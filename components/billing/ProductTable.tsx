@@ -6,6 +6,7 @@ import { apiFetch } from "@/server/api";
 /* ================= TYPES ================= */
 
 export interface Product {
+  productId?: number;        // 🔥 IMPORTANT
   productName: string;
   qty: number;
   rate: number;
@@ -15,6 +16,7 @@ interface DBProduct {
   id: number;
   name: string;
   rate: number;
+  stock: number;
 }
 
 /* ================= PROPS ================= */
@@ -44,14 +46,14 @@ export default function ProductTable({
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const lastValueRef = useRef<string[]>([""]);
 
-  /* ===== LOAD PRODUCTS ===== */
+  /* ===== LOAD PRODUCTS FROM DB ===== */
   useEffect(() => {
     apiFetch<DBProduct[]>("/products")
       .then(setAllProducts)
       .catch(() => {});
   }, []);
 
-  /* ===== BILLING ===== */
+  /* ===== BILLING CALCULATION ===== */
   useEffect(() => {
     const subTotal = products.reduce(
       (sum, p) => sum + p.qty * p.rate,
@@ -66,7 +68,7 @@ export default function ProductTable({
     onBillingChange({ subTotal, tax, gst, total });
   }, [products, onProductsChange, onBillingChange]);
 
-  /* ===== GOOGLE-STYLE TYPEAHEAD ===== */
+  /* ===== TYPEAHEAD (PRODUCT AUTOCOMPLETE) ===== */
   const handleTypeahead = (index: number, value: string) => {
     const lastValue = lastValueRef.current[index] ?? "";
 
@@ -78,7 +80,14 @@ export default function ProductTable({
     }
 
     if (!value) {
-      updateProduct(index, "productName", "");
+      const updated = [...products];
+      updated[index] = {
+        ...updated[index],
+        productName: "",
+        productId: undefined,
+        rate: 0,
+      };
+      setProducts(updated);
       lastValueRef.current[index] = "";
       return;
     }
@@ -87,17 +96,26 @@ export default function ProductTable({
       p.name.toLowerCase().startsWith(value.toLowerCase())
     );
 
+    // ❌ no match → manual item
     if (!match) {
-      updateProduct(index, "productName", value);
+      const updated = [...products];
+      updated[index] = {
+        ...updated[index],
+        productName: value,
+        productId: undefined,
+      };
+      setProducts(updated);
       lastValueRef.current[index] = value;
       return;
     }
 
+    // ✅ matched product
     const completed = match.name;
 
     const updated = [...products];
     updated[index] = {
       ...updated[index],
+      productId: match.id,     // 🔥 KEY FIX
       productName: completed,
       rate: match.rate,
     };
@@ -112,25 +130,22 @@ export default function ProductTable({
     });
   };
 
-        const updateProduct = (
-        index: number,
-        field: keyof Product,
-        value: string | number
-      ) => {
-        const updated = [...products];
-
-        updated[index] = {
-          ...updated[index],
-          [field]:
-            field === "qty" || field === "rate"
-              ? Number(value) || 0
-              : value,
-        };
-
-        setProducts(updated);
-      };
-
-
+  /* ===== UPDATE PRODUCT ===== */
+  const updateProduct = (
+    index: number,
+    field: keyof Product,
+    value: string | number
+  ) => {
+    const updated = [...products];
+    updated[index] = {
+      ...updated[index],
+      [field]:
+        field === "qty" || field === "rate"
+          ? Number(value) || 0
+          : value,
+    };
+    setProducts(updated);
+  };
 
   /* ===== ADD ROW ===== */
   const addRow = () => {
@@ -140,8 +155,7 @@ export default function ProductTable({
 
   /* ===== REMOVE ROW ===== */
   const removeRow = (index: number) => {
-    if (products.length === 1) return; // keep one row
-
+    if (products.length === 1) return;
     setProducts(products.filter((_, i) => i !== index));
     lastValueRef.current.splice(index, 1);
   };
@@ -181,15 +195,24 @@ export default function ProductTable({
               </td>
 
               <td>
+                {/* <input
+                  type="number"
+                  min={1}
+                  className="border px-2 py-1 w-16"
+                  value={p.qty}
+                  onChange={(e) =>
+                    updateProduct(i, "qty", e.target.value)
+                  }
+                /> */}
                 <input
                   type="number"
-                  className="border px-2 py-1 w-16"
                   min={1}
                   value={p.qty}
                   onChange={(e) =>
-                    updateProduct(i, "qty", Number(e.target.value))
+                    updateProduct(i, "qty", Math.max(1, Number(e.target.value)))
                   }
                 />
+
               </td>
 
               <td>
@@ -198,14 +221,13 @@ export default function ProductTable({
                   className="border px-2 py-1 w-20"
                   value={p.rate}
                   onChange={(e) =>
-                    updateProduct(i, "rate", Number(e.target.value))
+                    updateProduct(i, "rate", e.target.value)
                   }
                 />
               </td>
 
               <td>₹{p.qty * p.rate}</td>
 
-              {/* REMOVE BUTTON */}
               <td>
                 <button
                   onClick={() => removeRow(i)}

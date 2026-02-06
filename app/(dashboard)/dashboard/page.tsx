@@ -5,10 +5,9 @@ import StatCard from "@/components/dashboard/StatCard";
 import SalesChart from "@/components/dashboard/SalesChart";
 import DevicesChart from "@/components/dashboard/DevicesChart";
 import RecentInvoices from "@/components/dashboard/RecentInvoices";
-import StockSummary from "@/components/dashboard/StockSummary";
-import PaymentsChart from "@/components/dashboard/PaymentsChart";
 import StockAlert from "@/components/dashboard/StockAlert";
 import { apiFetch } from "@/server/api";
+import { useAuth } from "@/hooks/useAuth";
 
 /* ===== TYPES ===== */
 type Invoice = {
@@ -20,6 +19,7 @@ type Invoice = {
 export default function DashboardPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   /* ===== LOAD YOUR DATA ===== */
   useEffect(() => {
@@ -37,7 +37,6 @@ export default function DashboardPage() {
     }
   };
 
-  /* ===== CALCULATE KPIs FROM YOUR OWN DATA ===== */
   const kpis = useMemo(() => {
     let totalSales = 0;
     let pendingAmount = 0;
@@ -54,83 +53,57 @@ export default function DashboardPage() {
       totalSales,
       pendingAmount,
       receivedAmount: totalSales,
-      totalExpense: 0, // add expense logic later if needed
+      totalExpense: 0,
     };
   }, [invoices]);
 
   if (loading) {
     return (
-      <div className="p-6 text-gray-400">
-        Loading dashboard…
+      <div className="p-10 flex items-center justify-center min-h-screen bg-[#F8F8F8]">
+        <div className="flex flex-col items-center gap-4">
+           <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin" />
+           <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Initialising QuickBillz...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-8 bg-[#F8F8F8] min-h-screen space-y-8">
 
-      {/* ================= KPI CARDS ================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard
-          title="Total Sales"
-          value={kpis.totalSales}
-          type="totalSales"
-        />
-
-        <StatCard
-          title="Total Expense"
-          value={kpis.totalExpense}
-          type="totalExpense"
-        />
-
-        <StatCard
-          title="Pending Amount"
-          value={kpis.pendingAmount}
-          type="pendingPayment"
-        />
-
-        <StatCard
-          title="Received Amount"
-          value={kpis.receivedAmount}
-          type="paymentReceived"
-        />
+      {/* 2. KPI GRID (High Contrast Stat Cards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard title="Total Sales" value={kpis.totalSales} type="totalSales" />
+        <StatCard title="Total Expense" value={kpis.totalExpense} type="totalExpense" />
+        <StatCard title="Pending Amount" value={kpis.pendingAmount} type="pendingPayment" />
+        <StatCard title="Received Amount" value={kpis.receivedAmount} type="paymentReceived" />
       </div>
 
-      {/* ================= CHARTS ================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 card h-[360px]">
+      {/* 3. CHART SECTION (Two-thirds / One-third split) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 bg-white rounded-[32px] p-8 shadow-sm border border-gray-50 h-[400px]">
+          <h3 className="text-lg font-black mb-6">Sales Analytics</h3>
           <SalesChart />
         </div>
 
-        <div className="card h-[360px]">
+        <div className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-50 h-[400px]">
+          <h3 className="text-lg font-black mb-6">Device Usage</h3>
           <DevicesChart />
         </div>
       </div>
 
-      {/* ================= INVOICES + STOCK ================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 card">
+      {/* 4. RECENT ACTIVITY & ALERTS */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 bg-white rounded-[32px] p-8 shadow-sm border border-gray-50">
+          <h3 className="text-lg font-black mb-6">Recent Invoices</h3>
           <RecentInvoices />
         </div>
 
-        {/* <div className="card">
-          <StockSummary />
-        </div> */}
-
-        <div className="card">
+        <div className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-50">
+          <h3 className="text-lg font-black mb-6">Stock Alerts</h3>
           <StockAlert />
         </div>
       </div>
-
-      {/* ================= PAYMENTS + ALERT ================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* <div className="lg:col-span-2 card h-[320px]">
-          <PaymentsChart />
-        </div> */}
-
-
-      </div>
-
     </div>
   );
 }

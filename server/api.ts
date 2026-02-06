@@ -8,7 +8,8 @@ if (!API_URL) {
 
 export async function apiFetch<T>(
   url: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  responseType: "json" | "blob" = "json"
 ): Promise<T> {
   const token =
     typeof window !== "undefined"
@@ -18,36 +19,25 @@ export async function apiFetch<T>(
   const res = await fetch(`${API_URL}/api${url}`, {
     ...options,
     headers: {
-      "Content-Type": "application/json",
+      ...(responseType === "json" && { "Content-Type": "application/json" }),
       ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
   });
 
-  // ✅ Read body ONCE
-  const text = await res.text();
-  let data: any = null;
-
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch {
-    // non-JSON response
-  }
-
-  // 🔐 AUTH ERROR (NO AUTO LOGOUT)
   if (res.status === 401) {
-    throw new Error(
-      data?.message || "Unauthorized"
-    );
+    throw new Error("Unauthorized");
   }
 
-  // ❌ OTHER ERRORS
   if (!res.ok) {
-    throw new Error(
-      data?.message || `Request failed (${res.status})`
-    );
+    const msg = await res.text();
+    throw new Error(msg || `Request failed (${res.status})`);
   }
 
-  // ✅ SUCCESS
-  return data as T;
+  // ✅ IMPORTANT PART
+  if (responseType === "blob") {
+    return (await res.blob()) as T;
+  }
+
+  return (await res.json()) as T;
 }

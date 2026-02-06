@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/server/api";
-// import { useAuth } from "@/hooks/useAuth";
 
-// const { name, email, phone, address, isActive } = req.body;
 /* ================= TYPES ================= */
 
 interface Customer {
@@ -20,6 +18,22 @@ interface Customer {
 
 type StatusFilter = "All" | "Active" | "Inactive";
 
+/* ================= STATUS BADGE ================= */
+
+function StatusBadge({ isActive }: { isActive?: boolean }) {
+  return (
+    <span
+      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+        isActive
+          ? "bg-green-100 text-green-700"
+          : "bg-gray-200 text-gray-600"
+      }`}
+    >
+      {isActive ? "Active" : "Inactive"}
+    </span>
+  );
+}
+
 /* ================= PAGE ================= */
 
 export default function CustomersPage() {
@@ -27,7 +41,8 @@ export default function CustomersPage() {
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
+  const [statusFilter, setStatusFilter] =
+    useState<StatusFilter>("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,9 +54,7 @@ export default function CustomersPage() {
       const data = await apiFetch<Customer[]>("/customers");
       setCustomers(data);
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      }
+      if (err instanceof Error) setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -52,19 +65,22 @@ export default function CustomersPage() {
   }, []);
 
   /* ================= DELETE ================= */
-    const handleDelete = async (id: string) => {
-      if (!confirm("Are you sure you want to delete this customer?")) return;
 
-      try {
-        await apiFetch(`/customers/${id}`, {
-          method: "DELETE",
-        });
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this customer?"))
+      return;
 
-        setCustomers((prev) => prev.filter((c) => c.id !== id));
-      } catch (err: any) {
-        alert(err.message || "Delete failed");
-      }
-    };
+    try {
+      await apiFetch(`/customers/${id}`, {
+        method: "DELETE",
+      });
+      setCustomers((prev) =>
+        prev.filter((c) => c.id !== id)
+      );
+    } catch (err: any) {
+      alert(err.message || "Delete failed");
+    }
+  };
 
   /* ================= FILTER ================= */
 
@@ -76,66 +92,74 @@ export default function CustomersPage() {
       c.email?.toLowerCase().includes(q) ||
       c.phone?.includes(q);
 
-    // const isActive = c.isActive ?? true;
-    const isActive = c.isActive === true;
-    const status = isActive ? "Active" : "Inactive";
+    const status = c.isActive ? "Active" : "Inactive";
 
     return (
       matchesSearch &&
       (statusFilter === "All" || status === statusFilter)
     );
   });
-//* ================= STATUS BADGE ================= */
-  function StatusBadge({ isActive }: { isActive?: boolean }) {
-  return (
-    <span
-      className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-        isActive
-          ? "bg-green-100 text-green-700"
-          : "bg-red-100 text-red-700"
-      }`}
-    >
-      {isActive ? "Active" : "Inactive"}
-    </span>
-  );
-}
 
-
-  /* ================= UI ================= */
+  /* ================= UI STATES ================= */
 
   if (loading) {
-    return <p className="text-center py-24">Loading customers...</p>;
+    return (
+      <div className="text-center py-24 text-gray-500">
+        Loading customers…
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <p className="text-center text-red-600 py-24">
+      <div className="text-center py-24 text-red-600">
         {error}
-      </p>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* HEADER */}
+    <div className="space-y-8">
+      {/* ================= HEADER ================= */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Customers</h1>
+        <h1 className="text-2xl font-bold text-black">
+          Customers
+          <span className="ml-2 text-sm font-medium text-gray-500">
+            ({customers.length})
+          </span>
+        </h1>
 
         <button
           onClick={() => router.push("/customers/add")}
-          className="px-4 py-2 bg-indigo-600 text-white rounded"
+          className="
+            px-6 py-2.5
+            bg-black text-white
+            rounded-full
+            text-sm font-medium
+            hover:opacity-90
+            transition
+          "
         >
           + New Customer
         </button>
       </div>
 
-      {/* FILTERS */}
-      <div className="flex gap-4">
+      {/* ================= FILTERS ================= */}
+      <div className="flex flex-wrap gap-4">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by name, email, phone..."
-          className="border px-3 py-2 rounded w-72"
+          placeholder="Search name, email, phone…"
+          className="
+            w-72
+            px-4 py-2.5
+            rounded-full
+            border border-gray-300
+            bg-white
+            text-sm
+            focus:outline-none
+            focus:ring-2 focus:ring-black
+          "
         />
 
         <select
@@ -143,7 +167,15 @@ export default function CustomersPage() {
           onChange={(e) =>
             setStatusFilter(e.target.value as StatusFilter)
           }
-          className="border px-3 py-2 rounded"
+          className="
+            px-4 py-2.5
+            rounded-full
+            border border-gray-300
+            bg-white
+            text-sm
+            focus:outline-none
+            focus:ring-2 focus:ring-black
+          "
         >
           <option value="All">All</option>
           <option value="Active">Active</option>
@@ -151,23 +183,40 @@ export default function CustomersPage() {
         </select>
       </div>
 
-      {/* LIST */}
+      {/* ================= CUSTOMER CARDS ================= */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
         {filteredCustomers.map((c) => (
           <div
             key={c.id}
-            className="border rounded p-4 bg-white space-y-2"
+            className="
+              bg-white
+              rounded-[18px]
+              p-5
+              shadow-[0_10px_30px_rgba(0,0,0,0.05)]
+              space-y-3
+            "
           >
-            <h3 className="font-semibold">{c.name}</h3>
-             <StatusBadge isActive={c.isActive} />
-            <p className="text-sm">{c.email || "—"}</p>
-            <p className="text-sm">{c.phone || "—"}</p>
+            <div className="flex justify-between items-start">
+              <h3 className="font-semibold text-black">
+                {c.name}
+              </h3>
+              <StatusBadge isActive={c.isActive} />
+            </div>
 
-            <div className="flex gap-4 pt-3">
+            <p className="text-sm text-gray-600">
+              {c.email || "—"}
+            </p>
+
+            <p className="text-sm text-gray-600">
+              {c.phone || "—"}
+            </p>
+
+            <div className="flex gap-5 pt-4 text-sm">
               <button
-                onClick={() => router.push(`/customers/${c.id}`)}
-                className="text-sm text-indigo-600 hover:underline"
+                onClick={() =>
+                  router.push(`/customers/${c.id}`)
+                }
+                className="text-black hover:underline"
               >
                 View
               </button>
@@ -176,24 +225,23 @@ export default function CustomersPage() {
                 onClick={() =>
                   router.push(`/customers/${c.id}/edit`)
                 }
-                className="text-sm text-gray-600 hover:underline"
+                className="text-gray-500 hover:underline"
               >
                 Edit
               </button>
 
               <button
                 onClick={() => handleDelete(c.id)}
-                className="text-sm text-red-600 hover:underline"
+                className="text-red-600 hover:underline"
               >
                 Delete
               </button>
-
             </div>
           </div>
         ))}
 
         {filteredCustomers.length === 0 && (
-          <div className="col-span-full text-center text-gray-500 py-20">
+          <div className="col-span-full text-center py-24 text-gray-500">
             No customers found
           </div>
         )}
