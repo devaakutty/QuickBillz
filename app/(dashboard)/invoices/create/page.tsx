@@ -92,75 +92,77 @@ export default function CreateInvoicePage() {
 
   /* ================= SAVE + PAYMENT ================= */
 
-  const handleConfirmPayment = async (
-    method: "CASH" | "UPI" | "CARD",
-    details: any
-  ) => {
-    if (!customerId) {
-      alert("Select a customer");
-      return;
-    }
-
-    const invoiceNo = generateInvoiceNo();
-
-    /* 🔥 FIXED PAYLOAD */
-      const cleanItems = items
-        .filter(
-          (i) =>
-            i.name.trim() &&
-            Number.isInteger(Number(i.quantity)) &&
-            Number(i.quantity) > 0 &&
-            Number.isFinite(Number(i.price))
-        )
-        .map((i) => ({
-          productName: i.name.trim(),
-          qty: Number(i.quantity),   // ✅ THIS WAS MISSING
-          rate: Number(i.price),
-        }));
-
-      if (!cleanItems.length) {
-        alert("Please add valid product quantity");
+    const handleConfirmPayment = async (
+      method: "CASH" | "UPI" | "CARD",
+      details: any
+    ) => {
+      if (!customerId) {
+        alert("Select a customer");
         return;
       }
 
-      await apiFetch("/invoices", {
-        method: "POST",
-        body: JSON.stringify({
-          invoiceNo,
-          customerId,
-          items: cleanItems, // ✅ qty is now correct
-        }),
-      });
+      try {
+        const invoiceNo = generateInvoiceNo();
 
+        /* 🔥 FIXED PAYLOAD */
+        const cleanItems = items
+          .filter(
+            (i) =>
+              i.name.trim() &&
+              Number.isInteger(Number(i.quantity)) &&
+              Number(i.quantity) > 0 &&
+              Number.isFinite(Number(i.price))
+          )
+          .map((i) => ({
+            productName: i.name.trim(),
+            qty: Number(i.quantity),
+            rate: Number(i.price),
+          }));
 
-      /* 2️⃣ FRONTEND STORE */
-      addInvoice({
-        id: crypto.randomUUID(),
-        customer: { name: "", phone: "" },
-        products: cleanItems.map(i => ({
-          name: i.productName,
-          qty: i.qty,
-          rate: i.rate,
-        })),
-        billing: {
-          subTotal: total,
-          tax: 0,
-          gst: 0,
-          total,
-        },
-        payment: {
-          method,
-          provider: details.provider,
-        },
-        status: "PAID",
-        createdAt: new Date().toISOString(),
-      });
+        if (!cleanItems.length) {
+          alert("Please add valid product quantity");
+          return;
+        }
 
-      router.push("/invoices");
-    } catch (err: any) {
-      alert(err.message || "Failed to create invoice");
-    }
-  };
+        /* 1️⃣ BACKEND STORE */
+        await apiFetch("/invoices", {
+          method: "POST",
+          body: JSON.stringify({
+            invoiceNo,
+            customerId,
+            items: cleanItems,
+          }),
+        });
+
+        /* 2️⃣ FRONTEND STORE */
+        addInvoice({
+          id: crypto.randomUUID(),
+          customer: { name: "", phone: "" },
+          products: cleanItems.map((i) => ({
+            name: i.productName,
+            qty: i.qty,
+            rate: i.rate,
+          })),
+          billing: {
+            subTotal: total,
+            tax: 0,
+            gst: 0,
+            total,
+          },
+          payment: {
+            method,
+            provider: details.provider,
+          },
+          status: "PAID",
+          createdAt: new Date().toISOString(),
+        });
+
+        router.push("/invoices");
+      } catch (err: any) {
+        alert(err.message || "Failed to create invoice");
+      }
+    };
+
 
   /* ================= UI ================= */
 
