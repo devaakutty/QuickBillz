@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { apiFetch } from "@/server/api";
 
-export interface Customer {
-  id: string;
-  name: string;
-  phone: string;
-}
+  export interface Customer {
+    id: string;
+    name: string;
+    phone: string; // ✅ REQUIRED
+  }
 
 export default function CustomerSelector({
   customers = [],

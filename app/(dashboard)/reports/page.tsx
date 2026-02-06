@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import type React from "react";
+
 import {
   TrendingUp,
   BarChart3,
@@ -77,6 +79,7 @@ export default function ReportsPage() {
 
 /* ================= COMPACT NEO-BRUTAL CARD ================= */
 
+
 function ReportCard({
   title,
   desc,
@@ -86,7 +89,7 @@ function ReportCard({
   title: string;
   desc: string;
   href: string;
-  icon: JSX.Element;
+  icon: React.ReactNode; // ✅ FIX
 }) {
   return (
     <motion.div
@@ -102,7 +105,9 @@ function ReportCard({
         </div>
 
         <div className="space-y-1">
-          <h3 className="font-black text-lg tracking-tight text-black">{title}</h3>
+          <h3 className="font-black text-lg tracking-tight text-black">
+            {title}
+          </h3>
           <p className="text-xs font-bold text-gray-400 leading-relaxed uppercase tracking-tight">
             {desc}
           </p>
@@ -112,7 +117,10 @@ function ReportCard({
           <span className="text-[10px] font-black text-black uppercase tracking-widest group-hover:underline">
             View Report
           </span>
-          <ArrowRight size={14} className="text-black transition-transform group-hover:translate-x-1" />
+          <ArrowRight
+            size={14}
+            className="text-black transition-transform group-hover:translate-x-1"
+          />
         </div>
       </Link>
     </motion.div>

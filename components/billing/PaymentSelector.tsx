@@ -1,44 +1,41 @@
 "use client";
 
 import { useState } from "react";
-import PaymentMethod, {
-  PaymentMethodType,
-} from "./PaymentMethod";
+
+export type PaymentMethodType = "CASH" | "UPI" | "CARD";
 
 export default function PaymentSelector({
-  total,
-  onConfirm,
+  onChange,
 }: {
-  total: number;
-  onConfirm: (
-    method: PaymentMethodType,
-    details: {
-      provider?: string;
-      amount: number;
-      cashAmount?: number;
-      upiAmount?: number;
-    }
-  ) => Promise<void> | void;
+  onChange: (payment: {
+    method: PaymentMethodType;
+    provider?: string;
+  }) => void;
 }) {
-  const [loading, setLoading] = useState(false);
+  const [method, setMethod] = useState<PaymentMethodType>("CASH");
+  const [provider, setProvider] = useState("");
 
-  const handleConfirm = async (
-    method: PaymentMethodType,
-    details: any
-  ) => {
-    try {
-      setLoading(true);
-      await onConfirm(method, details);
-    } finally {
-      setLoading(false);
-    }
+  const handleSelect = (m: PaymentMethodType) => {
+    setMethod(m);
+    onChange({ method: m, provider });
   };
 
   return (
-    <PaymentMethod
-      total={total}
-      loading={loading}
-      onConfirm={handleConfirm}
-    />
+    <div className="space-y-4">
+      <button onClick={() => handleSelect("CASH")}>Cash</button>
+      <button onClick={() => handleSelect("UPI")}>UPI</button>
+      <button onClick={() => handleSelect("CARD")}>Card</button>
+
+      {(method === "UPI" || method === "CARD") && (
+        <input
+          placeholder="Provider"
+          value={provider}
+          onChange={(e) => {
+            setProvider(e.target.value);
+            onChange({ method, provider: e.target.value });
+          }}
+        />
+      )}
+    </div>
   );
 }

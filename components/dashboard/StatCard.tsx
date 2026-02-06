@@ -1,9 +1,12 @@
+"use client";
+
 import {
   IndianRupee,
   Wallet,
   CreditCard,
   Clock,
 } from "lucide-react";
+import React from "react"; // ✅ REQUIRED
 
 type StatType =
   | "totalSales"
@@ -20,7 +23,7 @@ export default function StatCard({
   value: number;
   type: StatType;
 }) {
-  const iconMap: Record<StatType, JSX.Element> = {
+  const iconMap: Record<StatType, React.ReactNode> = {
     totalSales: <IndianRupee size={18} />,
     totalExpense: <Wallet size={18} />,
     pendingPayment: <Clock size={18} />,

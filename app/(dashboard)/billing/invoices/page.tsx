@@ -31,17 +31,17 @@ export default function InvoicesPage() {
     loadInvoices();
   }, []);
 
-  const loadInvoices = async () => {
-    try {
-      setLoading(true);
-      const data = await apiFetch("/invoices");
-      setInvoices(data);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const loadInvoices = async () => {
+      try {
+        setLoading(true);
+        const data = await apiFetch<Invoice[]>("/invoices");
+        setInvoices(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   return (
     <div className="space-y-6">

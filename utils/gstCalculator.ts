@@ -1,13 +1,22 @@
-import { InvoiceItem } from "@/types/invoice";
+// utils/gstCalculator.ts
 
-export function calculateInvoiceTotals(items: InvoiceItem[]) {
+import { i } from "framer-motion/client";
+
+
+export function calculateInvoiceTotals(items: {
+  quantity: number;
+  price: number;
+  gstPercentage?: number;
+}[]) {
   let subtotal = 0;
   let gstAmount = 0;
 
   items.forEach((item) => {
     const itemTotal = item.quantity * item.price;
     subtotal += itemTotal;
-    gstAmount += (itemTotal * item.gstPercentage) / 100;
+
+    const gst = item.gstPercentage ?? 18; // ✅ DEFAULT GST
+    gstAmount += (itemTotal * gst) / 100;
   });
 
   const total = subtotal + gstAmount;

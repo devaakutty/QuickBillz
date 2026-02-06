@@ -1,13 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { InvoiceItem } from "@/types/invoice";
 import { calculateInvoiceTotals } from "@/utils/gstCalculator";
 import { useRouter } from "next/navigation";
 import { useInvoiceDraft } from "@/hooks/useInvoiceDraft";
 
+/* ================= TYPES ================= */
+
+type InvoiceItem = {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+  gstPercentage: number;
+};
+
+/* ================= COMPONENT ================= */
 
 export default function InvoiceForm() {
+  const router = useRouter();
+  const { setDraft } = useInvoiceDraft();
+
   const [items, setItems] = useState<InvoiceItem[]>([
     {
       id: crypto.randomUUID(),
@@ -31,8 +44,8 @@ export default function InvoiceForm() {
   };
 
   const addItem = () => {
-    setItems([
-      ...items,
+    setItems((prev) => [
+      ...prev,
       {
         id: crypto.randomUUID(),
         name: "",
@@ -44,7 +57,8 @@ export default function InvoiceForm() {
   };
 
   const removeItem = (id: string) => {
-    setItems(items.filter((item) => item.id !== id));
+    if (items.length === 1) return;
+    setItems((prev) => prev.filter((item) => item.id !== id));
   };
 
   const { subtotal, gstAmount, total } =
@@ -53,12 +67,6 @@ export default function InvoiceForm() {
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold">Create Invoice</h2>
-
-      {/* Customer */}
-      <input
-        className="w-full border p-2"
-        placeholder="Select Customer"
-      />
 
       {/* Items */}
       <div className="space-y-4">
@@ -77,26 +85,32 @@ export default function InvoiceForm() {
                 updateItem(item.id, "name", e.target.value)
               }
             />
+
             <input
               type="number"
               className="border p-2"
               value={item.quantity}
+              min={1}
               onChange={(e) =>
                 updateItem(item.id, "quantity", Number(e.target.value))
               }
             />
+
             <input
               type="number"
               className="border p-2"
               value={item.price}
+              min={0}
               onChange={(e) =>
                 updateItem(item.id, "price", Number(e.target.value))
               }
             />
+
             <input
               type="number"
               className="border p-2"
               value={item.gstPercentage}
+              min={0}
               onChange={(e) =>
                 updateItem(
                   item.id,
@@ -135,9 +149,18 @@ export default function InvoiceForm() {
 
       {/* Actions */}
       <div className="flex gap-2">
-        <button className="px-4 py-2 bg-gray-200 rounded">
-          Preview
-        </button>
+      <button
+        onClick={() => {
+          setDraft({
+            customerName: "", // ✅ REQUIRED BY TYPE
+            items,
+          });
+          router.push("/invoices/preview");
+        }}
+        className="px-4 py-2 bg-gray-200 rounded"
+      >
+        Preview
+      </button>
         <button className="px-4 py-2 bg-black text-white rounded">
           Save Invoice
         </button>

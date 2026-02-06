@@ -76,16 +76,35 @@ export default function CreateInvoicePage() {
   const addItem = () =>
     setItems([...items, { name: "", quantity: 1, price: 0 }]);
 
-  const updateItem = (
-    index: number,
-    field: keyof Item,
-    value: string
-  ) => {
-    const copy = [...items];
-    copy[index][field] =
-      field === "name" ? value : Number(value);
-    setItems(copy);
-  };
+    const updateItem = (
+      index: number,
+      field: keyof Item,
+      value: string
+    ) => {
+      setItems((prev) => {
+        const copy = [...prev];
+
+        if (field === "name") {
+          copy[index] = {
+            ...copy[index],
+            name: value,
+          };
+        } else if (field === "quantity") {
+          copy[index] = {
+            ...copy[index],
+            quantity: Number(value),
+          };
+        } else if (field === "price") {
+          copy[index] = {
+            ...copy[index],
+            price: Number(value),
+          };
+        }
+
+        return copy;
+      });
+    };
+
 
   const removeItem = (index: number) =>
     setItems(items.filter((_, i) => i !== index));
@@ -135,28 +154,33 @@ export default function CreateInvoicePage() {
         });
 
         /* 2️⃣ FRONTEND STORE */
-        addInvoice({
-          id: crypto.randomUUID(),
-          customer: { name: "", phone: "" },
-          products: cleanItems.map((i) => ({
-            name: i.productName,
-            qty: i.qty,
-            rate: i.rate,
-          })),
-          billing: {
-            subTotal: total,
-            tax: 0,
-            gst: 0,
-            total,
-          },
-          payment: {
-            method,
-            provider: details.provider,
-          },
-          status: "PAID",
-          createdAt: new Date().toISOString(),
-        });
+      addInvoice({
+        id: crypto.randomUUID(),
+        invoiceNo, // ✅ ADD THIS LINE
 
+        customer: { name: "", phone: "" },
+
+        products: cleanItems.map((i) => ({
+          name: i.productName,
+          qty: i.qty,
+          rate: i.rate,
+        })),
+
+        billing: {
+          subTotal: total,
+          tax: 0,
+          gst: 0,
+          total,
+        },
+
+        payment: {
+          method,
+          provider: details.provider,
+        },
+
+        status: "PAID",
+        createdAt: new Date().toISOString(),
+      });
         router.push("/invoices");
       } catch (err: any) {
         alert(err.message || "Failed to create invoice");

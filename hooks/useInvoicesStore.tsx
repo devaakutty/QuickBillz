@@ -18,23 +18,29 @@ export interface InvoiceProduct {
 
 export interface Invoice {
   id: string;
+  invoiceNo: string; // ✅ ADD THIS
+
   customer: {
     name: string;
-    phone: string;
+    phone?: string;
   };
+
   products: InvoiceProduct[];
+
   billing: {
     subTotal: number;
     tax: number;
     gst: number;
     total: number;
   };
+
   payment: {
     method: string;
     provider?: string;
   };
+
   status: "PAID" | "UNPAID";
-  createdAt: string; // ✅ ISO STRING
+  createdAt: string;
 }
 
 /* ================= CONTEXT ================= */
@@ -46,9 +52,7 @@ interface InvoiceStoreContextType {
 }
 
 const InvoiceStoreContext =
-  createContext<InvoiceStoreContextType | undefined>(
-    undefined
-  );
+  createContext<InvoiceStoreContextType | undefined>(undefined);
 
 /* ================= PROVIDER ================= */
 
@@ -59,7 +63,7 @@ export function InvoiceStoreProvider({
 }) {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
 
-  /* ✅ LOAD FROM LOCALSTORAGE */
+  /* LOAD FROM LOCALSTORAGE */
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -73,28 +77,25 @@ export function InvoiceStoreProvider({
     }
   }, []);
 
-  /* ✅ SAVE TO LOCALSTORAGE */
+  /* SAVE TO LOCALSTORAGE */
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    localStorage.setItem(
-      "invoices",
-      JSON.stringify(invoices)
-    );
+    localStorage.setItem("invoices", JSON.stringify(invoices));
   }, [invoices]);
 
-  /* ✅ ADD INVOICE (FIXED DATE) */
+  /* ADD INVOICE */
   const addInvoice = (invoice: Invoice) => {
     setInvoices((prev) => [
       ...prev,
       {
         ...invoice,
-        createdAt: new Date().toISOString(), // 🔥 CRITICAL FIX
+        createdAt: new Date().toISOString(), // always normalize date
       },
     ]);
   };
 
-  /* ✅ CLEAR (OPTIONAL) */
+  /* CLEAR ALL INVOICES */
   const clearInvoices = () => {
     setInvoices([]);
     localStorage.removeItem("invoices");

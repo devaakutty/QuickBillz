@@ -9,16 +9,14 @@ export default function AuthGuard({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated } = useAuth(); // ✅ FIX
   const router = useRouter();
   const pathname = usePathname();
 
   const isDashboardRoute = pathname.startsWith("/dashboard");
 
   useEffect(() => {
-    if (isLoading) return;
-
-    // 🔐 Protect ONLY dashboard routes
+    // 🔐 Protect dashboard routes
     if (!isAuthenticated && isDashboardRoute) {
       router.replace("/login");
     }
@@ -27,18 +25,7 @@ export default function AuthGuard({
     if (isAuthenticated && pathname === "/login") {
       router.replace("/dashboard");
     }
-  }, [isAuthenticated, isLoading, pathname, router, isDashboardRoute]);
-
-  // ⏳ Loading
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <span className="text-sm text-gray-400">
-          Checking session…
-        </span>
-      </div>
-    );
-  }
+  }, [isAuthenticated, pathname, router, isDashboardRoute]);
 
   // ⛔ Block dashboard render if not authenticated
   if (!isAuthenticated && isDashboardRoute) {

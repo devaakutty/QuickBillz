@@ -2,7 +2,9 @@
 
 import { generateInvoicePDF } from "@/utils/invoicePdf";
 import { loadRazorpay } from "@/utils/loadRazorpay";
-import { Invoice } from "@/types/invoice";
+// import type { Invoice } from "@/hooks/useInvoicesStore"; // ✅ FIX]
+import type { Invoice } from "@/types/invoice";
+
 
 export default function InvoiceActions({
   invoice,
@@ -13,7 +15,10 @@ export default function InvoiceActions({
 }) {
   return (
     <div className="flex gap-3 flex-wrap">
-      <button onClick={() => generateInvoicePDF(invoice)}>
+      <button
+        onClick={() => generateInvoicePDF(invoice)}
+        className="px-4 py-2 border rounded"
+      >
         Download PDF
       </button>
 
@@ -25,13 +30,14 @@ export default function InvoiceActions({
 
             const rzp = new (window as any).Razorpay({
               key: process.env.NEXT_PUBLIC_RAZORPAY_KEY!,
-              amount: invoice.total * 100,
+              amount: invoice.billing.total * 100, // ✅ correct source
               currency: "INR",
               handler: () => markAsPaid(invoice.id),
             });
 
             rzp.open();
           }}
+          className="px-4 py-2 bg-green-600 text-white rounded"
         >
           Pay Now
         </button>

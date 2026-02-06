@@ -43,17 +43,18 @@ export default function InvoiceDetailsPage({
     loadInvoice();
   }, []);
 
-  const loadInvoice = async () => {
-    try {
-      setLoading(true);
-      const data = await apiFetch(`/invoices/${params.id}`);
-      setInvoice(data);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const loadInvoice = async () => {
+      try {
+        setLoading(true);
+        const data = await apiFetch<Invoice>(`/invoices/${params.id}`);
+        setInvoice(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
 
   if (loading) {
     return (

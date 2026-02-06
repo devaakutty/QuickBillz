@@ -195,15 +195,6 @@ export default function ProductTable({
               </td>
 
               <td>
-                {/* <input
-                  type="number"
-                  min={1}
-                  className="border px-2 py-1 w-16"
-                  value={p.qty}
-                  onChange={(e) =>
-                    updateProduct(i, "qty", e.target.value)
-                  }
-                /> */}
                 <input
                   type="number"
                   min={1}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/server/api";
 import { useAuth } from "@/hooks/useAuth";
 
 /* ================= TYPES ================= */
@@ -17,7 +16,7 @@ interface AuditLog {
 /* ================= PAGE ================= */
 
 export default function AuditLogsPage() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,20 +25,20 @@ export default function AuditLogsPage() {
   /* ================= LOAD LOGS ================= */
 
   useEffect(() => {
-    if (isLoading || !isAuthenticated) return;
+    if (!isAuthenticated) {
+      setLoading(false); // ✅ FIX
+      return;
+    }
+
     loadLogs();
-  }, [isLoading, isAuthenticated]);
+  }, [isAuthenticated]);
 
   const loadLogs = async () => {
     try {
       setLoading(true);
       setError("");
 
-      // 🔁 Replace with real API later
-      // const data = await apiFetch<AuditLog[]>("/audit-logs");
-      // setLogs(data);
-
-      // ✅ TEMP DEMO DATA (SAFE)
+      // ✅ TEMP DEMO DATA
       setLogs([
         {
           id: "1",
@@ -80,6 +79,14 @@ export default function AuditLogsPage() {
     );
   }
 
+  if (!isAuthenticated) {
+    return (
+      <div className="p-6 text-gray-400">
+        Please log in to view audit logs.
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className="p-6 text-red-500">
@@ -92,18 +99,11 @@ export default function AuditLogsPage() {
 
   return (
     <div className="space-y-6 max-w-6xl">
-      {/* HEADER */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">
-          Audit Logs
-        </h1>
-
-        <span className="text-sm text-gray-400">
-          Last 30 days
-        </span>
+        <h1 className="text-2xl font-semibold">Audit Logs</h1>
+        <span className="text-sm text-gray-400">Last 30 days</span>
       </div>
 
-      {/* TABLE */}
       <div className="bg-white border rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-100 text-gray-600">
@@ -121,18 +121,9 @@ export default function AuditLogsPage() {
                 key={log.id}
                 className="border-t hover:bg-gray-50"
               >
-                <td className="p-4 font-medium">
-                  {log.action}
-                </td>
-
-                <td className="p-4 text-gray-700">
-                  {log.resource}
-                </td>
-
-                <td className="p-4 text-center text-gray-500">
-                  {log.ip}
-                </td>
-
+                <td className="p-4 font-medium">{log.action}</td>
+                <td className="p-4 text-gray-700">{log.resource}</td>
+                <td className="p-4 text-center text-gray-500">{log.ip}</td>
                 <td className="p-4 text-center text-gray-500">
                   {log.createdAt}
                 </td>
@@ -153,7 +144,6 @@ export default function AuditLogsPage() {
         </table>
       </div>
 
-      {/* INFO */}
       <p className="text-xs text-gray-400">
         Audit logs track important actions like login, profile updates,
         invoices, and security changes.

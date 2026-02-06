@@ -15,24 +15,28 @@ export function useDashboardSummary() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-    const load = async () => {
-    setLoading(true);
-    setError(null);
+  const load = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    const result = await apiFetch<DashboardSummary>(
-        "/dashboard/summary",
-        { silent: true }
-    );
+      const result = await apiFetch<DashboardSummary>(
+        "/dashboard/summary"
+      );
 
-    if (!result) {
+      if (!result) {
         setError("Failed to load dashboard summary");
         setData(null);
-    } else {
+      } else {
         setData(result);
+      }
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+      setData(null);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-    };
+  };
 
   useEffect(() => {
     load();

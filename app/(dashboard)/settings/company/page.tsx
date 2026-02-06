@@ -30,7 +30,7 @@ const plans = [
 /* ================= PAGE ================= */
 
 export default function CompanySettingsPage() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated } = useAuth(); // ✅ FIX
 
   const [company, setCompany] = useState<any>(null);
   const [currentPlan, setCurrentPlan] =
@@ -41,20 +41,27 @@ export default function CompanySettingsPage() {
   /* ================= PAYMENT STATE ================= */
 
   const [showPayment, setShowPayment] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<typeof plans[0] | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"upi" | "card">("upi");
+  const [selectedPlan, setSelectedPlan] =
+    useState<(typeof plans)[0] | null>(null);
+  const [paymentMethod, setPaymentMethod] =
+    useState<"upi" | "card">("upi");
   const [paying, setPaying] = useState(false);
 
   /* ================= LOAD COMPANY ================= */
 
   useEffect(() => {
-    if (isLoading || !isAuthenticated) return;
+    if (!isAuthenticated) {
+      setLoadingProfile(false); // ✅ IMPORTANT
+      return;
+    }
+
     loadCompany();
-  }, [isLoading, isAuthenticated]);
+  }, [isAuthenticated]);
 
   const loadCompany = async () => {
     try {
       setLoadingProfile(true);
+
       const data = await apiFetch<any>("/users/me");
 
       setCompany({
@@ -70,7 +77,7 @@ export default function CompanySettingsPage() {
 
   /* ================= UPGRADE HANDLER ================= */
 
-  const openPayment = (plan: typeof plans[0]) => {
+  const openPayment = (plan: (typeof plans)[0]) => {
     setSelectedPlan(plan);
     setShowPayment(true);
   };
@@ -82,7 +89,10 @@ export default function CompanySettingsPage() {
       setPaying(true);
 
       // 🔜 Backend integration later
-      // await apiFetch("/company/upgrade", { method: "POST", body: JSON.stringify({ plan: selectedPlan.id }) })
+      // await apiFetch("/company/upgrade", {
+      //   method: "POST",
+      //   body: JSON.stringify({ plan: selectedPlan.id }),
+      // });
 
       setCurrentPlan(selectedPlan.id as any);
       setShowPayment(false);
@@ -96,6 +106,14 @@ export default function CompanySettingsPage() {
 
   if (loadingProfile) {
     return <div className="p-6 text-gray-400">Loading…</div>;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="p-6 text-gray-400">
+        Please log in to view company settings.
+      </div>
+    );
   }
 
   /* ================= UI ================= */
@@ -135,11 +153,15 @@ export default function CompanySettingsPage() {
                     : "bg-[#11141c] border-white/10"
                 }`}
               >
-                <h3 className="font-semibold text-white">{plan.name}</h3>
+                <h3 className="font-semibold text-white">
+                  {plan.name}
+                </h3>
 
                 <p className="text-3xl font-bold text-white my-2">
                   ₹{plan.price}
-                  <span className="text-sm text-gray-400">/month</span>
+                  <span className="text-sm text-gray-400">
+                    /month
+                  </span>
                 </p>
 
                 <ul className="text-sm text-gray-400 space-y-1 mb-4">
@@ -178,10 +200,12 @@ export default function CompanySettingsPage() {
             </h3>
 
             <p className="text-white text-lg mb-4">
-              Amount: <span className="font-bold">₹{selectedPlan.price}</span>
+              Amount:{" "}
+              <span className="font-bold">
+                ₹{selectedPlan.price}
+              </span>
             </p>
 
-            {/* PAYMENT METHOD */}
             <div className="space-y-3 mb-6">
               <label className="flex items-center gap-2 text-white">
                 <input
@@ -227,7 +251,13 @@ export default function CompanySettingsPage() {
 
 /* ================= INFO ================= */
 
-function Info({ label, value }: { label: string; value: string }) {
+function Info({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
   return (
     <div>
       <p className="text-gray-400 text-sm">{label}</p>
